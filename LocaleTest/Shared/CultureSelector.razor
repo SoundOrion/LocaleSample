@@ -1,0 +1,52 @@
+﻿@using  System.Globalization
+@inject NavigationManager Nav
+@inject IStringLocalizer<Locale> Loc
+
+<p>
+    <label>
+        @greeting :
+        <select @bind="Culture">
+            @foreach (var culture in supportedCultures)
+            {
+                <option value="@culture">@culture.NativeName</option>
+            }
+        </select>
+    </label>
+</p>
+
+@code
+{
+    private string greeting;
+
+    private CultureInfo[] supportedCultures = new[]
+{
+        new CultureInfo("ja-JP"),
+        new CultureInfo("en-US"),
+
+    };
+
+    protected override void OnInitialized()
+    {
+        Culture = CultureInfo.CurrentCulture;
+        greeting = Loc["SelectLanguage"];
+    }
+
+    private CultureInfo Culture
+    {
+        get => CultureInfo.CurrentCulture;
+        set
+        {
+            if (CultureInfo.CurrentCulture != value)
+            {
+                var uri = new Uri(Nav.Uri)
+                    .GetComponents(UriComponents.PathAndQuery, UriFormat.Unescaped);
+                var cultureEscaped = Uri.EscapeDataString(value.Name);
+                var uriEscaped = Uri.EscapeDataString(uri);
+
+                Nav.NavigateTo(
+                    $"Culture/Set?culture={cultureEscaped}&redirectUri={uriEscaped}",
+                    forceLoad: true);
+            }
+        }
+    }
+}
